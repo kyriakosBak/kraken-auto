@@ -1,0 +1,2 @@
+Intention of the project is to connect to Kraken every X time and buy a specific amount worth of crypto. Essentially trying to do DCA without manual intervention other than adding funds to the account.
+Later on, it will be migrated to a cloud service and run automatically. 
