@@ -1,0 +1,29 @@
+{
+  "name": "kraken-auto",
+  "version": "1.0.0",
+  "description": "Kraken automatic execution of orders",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/kyriakosBak/kraken-auto.git"
+  },
+  "keywords": [
+    "kraken",
+    "exchange",
+    "buy",
+    "sell",
+    "auto"
+  ],
+  "author": "Kyriakos Bakirlis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kyriakosBak/kraken-auto/issues"
+  },
+  "homepage": "https://github.com/kyriakosBak/kraken-auto#readme",
+  "dependencies": {
+    "kraken-api": "^1.0.1"
+  }
+}
