@@ -24,6 +24,8 @@
   },
   "homepage": "https://github.com/kyriakosBak/kraken-auto#readme",
   "dependencies": {
-    "kraken-api": "^1.0.1"
+    "googleapis": "^122.0.0",
+    "kraken-api": "^1.0.1",
+    "package.json": "^2.0.1"
   }
 }
