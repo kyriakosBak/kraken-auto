@@ -1,4 +1,4 @@
-const IS_TEST_ORDER = true
+const IS_TEST_ORDER = false
 const key = ''; // API Key
 const secret = ''; // API Private Key
 
@@ -48,7 +48,7 @@ async function sendOrder(pair, type, price, volume) {
       ordertype: 'limit',
       price,
       volume,
-      oflags: 'post', // Make the order post-only
+      // oflags: 'post', // Make the order post-only
       validate: IS_TEST_ORDER
     });
     return response.result;
@@ -60,7 +60,7 @@ async function sendOrder(pair, type, price, volume) {
 
 (async () => {
   const pair = 'XETHZEUR';
-  const eurosToSpend = 20;
+  const eurosToSpend = 150;
   const availableBalance = await getBalance();
   if (availableBalance.ZEUR < eurosToSpend) {
     let msg = `Not enough euros to spend. Available balance: ${availableBalance.ZEUR}. ` +
