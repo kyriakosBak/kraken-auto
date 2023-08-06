@@ -1,0 +1,11 @@
+{
+    "kraken": {
+        "isTestOrder" : true,
+        "apiKey" : "",
+        "apiSecret" : "",
+    },
+    "google": {
+        "uploadSheetID" : "",
+        "uploadSheetName" : "",
+    }
+}

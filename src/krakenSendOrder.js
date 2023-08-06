@@ -1,8 +1,7 @@
-const IS_TEST_ORDER = false
-const key = ''; // API Key
-const secret = ''; // API Private Key
-
-
+const config = require('config');
+const IS_TEST_ORDER = config.get('kraken.isTestOrder')
+const key = config.get('kraken.apiKey'); // API Key
+const secret = config.get('kraken.apiSecret'); // API Private Key
 const KrakenClient = require('kraken-api');
 const kraken = new KrakenClient(key, secret);
 

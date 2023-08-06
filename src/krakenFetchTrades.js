@@ -1,5 +1,6 @@
-const key = ''; // API Key
-const secret = '';
+const config = require('config');
+const key = config.get('kraken.apiKey'); // API Key
+const secret = config.get('kraken.apiSecret'); // API Private Key
 
 const { google } = require('googleapis');
 const { authenticate } = require('@google-cloud/local-auth');
@@ -7,7 +8,6 @@ const fs = require('fs').promises;
 const path = require('path');
 const KrakenClient = require('kraken-api');
 const kraken = new KrakenClient(key, secret);
-// const credentials = JSON.parse(fs.readFileSync(''));
 
 // Get current account balance
 async function getBalance() {
@@ -91,8 +91,9 @@ async function addToGoogleSheets(trades){
   try {
     const auth = await authorize();
     const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = ''; 
-    const spreadsheetName = '';
+    const spreadsheetId = config.get("google.uploadSheetID"); 
+    const spreadsheetName = config.get("google.uploadSheetName"); 
+
     let tradesData = (Object.entries(trades)
       .map(([_, val]) => val)
       .filter(([_, trade]) => trade.status === 'closed')
