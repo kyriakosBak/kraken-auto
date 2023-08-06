@@ -1,11 +1,13 @@
-const key = 'nSY9dXe75uQj8/9GuEVZataP+x1erdqZowQ/OLaRF1xiFGme11ihlfCs'; // API Key
-const secret = 'hxHSkpQMSoNLu+C6755ZsFPTLxIrV0xNCm9AOS0wIrHNOhT60M8GaVz3mZjY7RMvBZSWAVBJ+VDsoabepeVC5A=='; // API Private Key
+const key = ''; // API Key
+const secret = '';
 
 const { google } = require('googleapis');
-const fs = require('fs');
+const { authenticate } = require('@google-cloud/local-auth');
+const fs = require('fs').promises;
+const path = require('path');
 const KrakenClient = require('kraken-api');
 const kraken = new KrakenClient(key, secret);
-const credentials = JSON.parse(fs.readFileSync(''));
+// const credentials = JSON.parse(fs.readFileSync(''));
 
 // Get current account balance
 async function getBalance() {
@@ -29,26 +31,6 @@ async function getTrades() {
   }
 }
 
-// Add data to google sheets
-async function addToGoogleSheets(trades){
-  try {
-    const auth = new google.auth.OAuth2(); 
-    auth.setCredentials();
-    const sheets = google.sheets({ version: 'v4', auth });
-    const spreadsheetId = ''; 
-    const spreadsheetName = 'Test Sheet';
-    const tradesData = trades;
-    const response = await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: '${sheetName}!A1',
-      valueInputOptions: 'RAW',
-      resource: { values: tradesData }});
-      console.log('SUCCESS:', response.data);
-  } catch (error) {
-    console.error('ERROR:', error);
-  }
-}
-
 // Get closed orders
 async function getClosedOrders() {
   try {
@@ -62,18 +44,77 @@ async function getClosedOrders() {
   }
 }
 
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets']; 
+const TOKEN_PATH = path.join(process.cwd(), 'token.json');
+const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
+async function loadSavedCredentialsIfExist() {
+  try {
+    const content = await fs.readFile(TOKEN_PATH);
+    const credentials = JSON.parse(content);
+    return google.auth.fromJSON(credentials);
+  } catch (err) {
+    return null;
+  }
+}
+
+async function saveCredentials(client) {
+  const content = await fs.readFile(CREDENTIALS_PATH);
+  const keys = JSON.parse(content);
+  const key = keys.installed || keys.web;
+  const payload = JSON.stringify({
+    type: 'authorized_user',
+    client_id: key.client_id,
+    client_secret: key.client_secret,
+    refresh_token: client.credentials.refresh_token,
+  });
+  await fs.writeFile(TOKEN_PATH, payload);
+}
+
+async function authorize() {
+  let client = await loadSavedCredentialsIfExist();
+  if (client) {
+    return client;
+  }
+  client = await authenticate({
+    scopes: SCOPES,
+    keyfilePath: CREDENTIALS_PATH,
+  });
+  if (client.credentials) {
+    await saveCredentials(client);
+  }
+  return client;
+}
+
+// Add data to google sheets
+async function addToGoogleSheets(trades){
+  try {
+    const auth = await authorize();
+    const sheets = google.sheets({ version: 'v4', auth });
+    const spreadsheetId = ''; 
+    const spreadsheetName = '';
+    let tradesData = (Object.entries(trades)
+      .map(([_, val]) => val)
+      .filter(([_, trade]) => trade.status === 'closed')
+      .reverse()
+      .map(([_, trade]) => [
+          new Date(trade.closetm * 1000).toLocaleDateString('en-GB'),
+          Math.round(trade.price * trade.vol_exec),
+          Number(trade.price),
+          Number(trade.vol_exec)
+      ]));
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: spreadsheetName + '!A2',
+      valueInputOption: 'RAW',
+      resource: { values: tradesData }});
+      console.log('SUCCESS:', response.data);
+  } catch (error) {
+    console.error('ERROR:', error);
+  }
+}
 
 (async () => {
-  const pair = 'XETHZEUR';
-  const availableBalance = await getBalance();
-  const trades = await getTrades();
   const closedPositions = await getClosedOrders();
-  for (const item in closedPositions){
-      const unixTimestamp = closedPositions[item][1].opentm;
-      const date = new Date(unixTimestamp);
-      console.log(date);
-  }
-  addToGoogleSheets(trades);
-//  console.log(closedPositions);
+  addToGoogleSheets(closedPositions);
 })();
